@@ -41,6 +41,7 @@ var featureFn = require( './feature.js' );
 var stem = require( './porter-stemmer.js' );
 var lemmatize = require( './lemmatize.js' );
 var readabilityStats = require( './readability-stats.js' );
+var summary = require( './summary.js' );
 
 var model = Object.create( null );
 
@@ -58,5 +59,6 @@ model.addons.stem = stem;
 model.addons.lemmatize = lemmatize;
 model.addons.readabilityStats = readabilityStats;
 model.addons.wordVectors = undefined;
+model.addons.summary = summary;
 
 module.exports = model;

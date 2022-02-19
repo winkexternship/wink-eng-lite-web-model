@@ -1,0 +1,1 @@
+var summary=function(rdd,its){return console.log(rdd),console.log(its),"This is a summary text for the given input text."};module.exports=summary;

@@ -40,6 +40,7 @@ module.exports = function ( grunt ) {
           'dist/lemmatize.js': [ 'src/lemmatize.js' ],
           'dist/syllables.js': [ 'src/syllables.js' ],
           'dist/readability-stats.js': [ 'src/readability-stats.js' ],
+          'dist/summary.js': [ 'src/summary.js' ],
         }
       }
     },
