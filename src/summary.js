@@ -48,7 +48,7 @@ var summary = function ( rdd, its, as, simmilarity ) {
             senGraph[i][j] = numOfCommonTokens / (Math.log(aptTokens[i].length) + Math.log(aptTokens[j].length));
             // For cosine simmilarity
             // senGraph[i][j] = simmilarity.bow.cosine(bow[i], bow[j]);
-            if( Number.isNaN (senGraph[i][j] ) )
+            if( !Number.isFinite (senGraph[i][j] )  )
                 senGraph[i][j] = 0;
             senGraph[j][i] = senGraph[i][j];
         }
