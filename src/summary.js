@@ -1,4 +1,4 @@
-var summary = function ( rdd, its, as, simmilarity ) {
+var summary = function ( rdd, its, as, simmilarity, bm25 ) {
 
     var tokens = rdd.tokens;
     var sentences = rdd.sentences;
@@ -27,8 +27,18 @@ var summary = function ( rdd, its, as, simmilarity ) {
         }
         // bow will be used if we are using cosine simmilarity funtion
         // bow.push(as.bow(temp));
+
+        // used for common terms
         aptTokens.push(temp);
     }
+
+    // bm25 learning and creating bow
+    aptTokens.forEach( colToken => bm25.learn(colToken) );
+    for ( let i=0; i<aptTokens.length; i+=1 ) {
+        bow.push(bm25.doc(i).out(its.bow));
+    }
+    console.log(bow);
+
     console.log(`Number of sentences in aptTokens:${aptTokens.length}`);
     console.log('aptTokens:');
     console.log(aptTokens);
