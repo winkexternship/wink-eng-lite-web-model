@@ -198,7 +198,7 @@ let summary = function ( rdd, its, as, simmilarity, bm25 ) {
     summaryInfo.paraStarts = textInfo.paraStarts;
 
     // // Cosine Simmilarity + Pagerank Without Weights
-    // const textInfo = preprocessingBow( rdd, its );
+    // const textInfo = preprocessingBow( rdd, its, as );
     // for ( let i = 0; i < textInfo.bow.length; i += 1 ) {
     //     weights.push( pagerankWithoutWeights( createGraphCosine( textInfo.bow[i], simmilarity ) ) );
     // }
@@ -223,7 +223,7 @@ let summary = function ( rdd, its, as, simmilarity, bm25 ) {
     // summaryInfo.paraStarts = textInfo.paraStarts;
 
     // // Cosine Simmilarity + Pagerank With Weights
-    // const textInfo = preprocessingBow( rdd, its );
+    // const textInfo = preprocessingBow( rdd, its, as );
     // for ( let i = 0; i < textInfo.bow.length; i += 1 ) {
     //     weights.push( pagerankWithWeights( createGraphCosine( textInfo.bow[i], simmilarity ) ) );
     // }
