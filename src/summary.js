@@ -66,16 +66,17 @@ let preprocessingBow = function ( rdd, its, as ) {
 
 };
 
-let bm25Bow = function ( aptTokens, bm25, its ) {
+let bm25Bow = function ( aptTokens, BM25Vectorizer, its ) {
 
     // variables
     const numOfParagraphs = aptTokens.length;
     const bow = [];
 
     for ( let i = 0; i < numOfParagraphs; i += 1 ) {
+      const bm25 = BM25Vectorizer();
       aptTokens[i].forEach( (colToken) => bm25.learn(colToken) );
       const para = [];
-      for ( let j = 0; j < aptTokens[i].length; i += 1 ) {
+      for ( let j = 0; j < aptTokens[i].length; j += 1 ) {
         para.push(bm25.doc(j).out(its.bow));
       }
       bow.push(para);
@@ -184,18 +185,18 @@ let pagerankWithWeights = function ( paraSenGraph ) {
 };
 
 // Comment out blocks for which you want to run tests
-let summary = function ( rdd, its, as, simmilarity, bm25 ) {
+let summary = function ( rdd, its, as, simmilarity, BM25Vectorizer ) {
 
     const weights = [];
     const summaryInfo = {};
 
-    // Common Intersection + Pagerank Without Weights
-    const textInfo = preprocessingNonBow( rdd, its);
-    for ( let i = 0; i < textInfo.aptTokens.length; i += 1 ) {
-        weights.push( pagerankWithoutWeights( createGraphCommonTokens( textInfo.aptTokens[i] ) ) );
-    }
-    summaryInfo.weights = weights;
-    summaryInfo.paraStarts = textInfo.paraStarts;
+    // // Common Intersection + Pagerank Without Weights
+    // const textInfo = preprocessingNonBow( rdd, its);
+    // for ( let i = 0; i < textInfo.aptTokens.length; i += 1 ) {
+    //     weights.push( pagerankWithoutWeights( createGraphCommonTokens( textInfo.aptTokens[i] ) ) );
+    // }
+    // summaryInfo.weights = weights;
+    // summaryInfo.paraStarts = textInfo.paraStarts;
 
     // // Cosine Simmilarity + Pagerank Without Weights
     // const textInfo = preprocessingBow( rdd, its, as );
@@ -207,8 +208,8 @@ let summary = function ( rdd, its, as, simmilarity, bm25 ) {
 
     // // BM25 + Pagerank Without Weights
     // const textInfo = preprocessingNonBow( rdd, its);
-    // const bow = bm25Bow( textInfo.aptTokens, bm25, its );
-    // for ( let i = 0; i < aptTokens.length; i += 1 ) {
+    // const bow = bm25Bow( textInfo.aptTokens, BM25Vectorizer, its );
+    // for ( let i = 0; i < textInfo.aptTokens.length; i += 1 ) {
     //     weights.push( pagerankWithoutWeights( createGraphCosine( bow[i], simmilarity ) ) );
     // }
     // summaryInfo.weights = weights;
@@ -222,18 +223,18 @@ let summary = function ( rdd, its, as, simmilarity, bm25 ) {
     // summaryInfo.weights = weights;
     // summaryInfo.paraStarts = textInfo.paraStarts;
 
-    // // Cosine Simmilarity + Pagerank With Weights
-    // const textInfo = preprocessingBow( rdd, its, as );
-    // for ( let i = 0; i < textInfo.bow.length; i += 1 ) {
-    //     weights.push( pagerankWithWeights( createGraphCosine( textInfo.bow[i], simmilarity ) ) );
-    // }
-    // summaryInfo.weights = weights;
-    // summaryInfo.paraStarts = textInfo.paraStarts;
+    // Cosine Simmilarity + Pagerank With Weights
+    const textInfo = preprocessingBow( rdd, its, as );
+    for ( let i = 0; i < textInfo.bow.length; i += 1 ) {
+        weights.push( pagerankWithWeights( createGraphCosine( textInfo.bow[i], simmilarity ) ) );
+    }
+    summaryInfo.weights = weights;
+    summaryInfo.paraStarts = textInfo.paraStarts;
 
     // // BM25 + Pagerank With Weights
     // const textInfo = preprocessingNonBow( rdd, its);
-    // const bow = bm25Bow( textInfo.aptTokens, bm25, its );
-    // for ( let i = 0; i < aptTokens.length; i += 1 ) {
+    // const bow = bm25Bow( textInfo.aptTokens, BM25Vectorizer, its );
+    // for ( let i = 0; i < textInfo.aptTokens.length; i += 1 ) {
     //     weights.push( pagerankWithWeights( createGraphCosine( bow[i], simmilarity ) ) );
     // }
     // summaryInfo.weights = weights;
