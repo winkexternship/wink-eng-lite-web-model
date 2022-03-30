@@ -1,3 +1,5 @@
+// NON BOW PREPROCESSING FUNCTIONS
+
 let preprocessingNonBow = function ( rdd, its ) {
 
     // required information
@@ -32,6 +34,42 @@ let preprocessingNonBow = function ( rdd, its ) {
 
 };
 
+let modifiedPreProcessingNonBow = function ( rdd, its) {
+
+  // required information
+  const numOfSentences = rdd.sentences.length;
+  const sentences = rdd.sentences;
+  const tokens = rdd.tokens;
+  const cache = rdd.cache;
+  const aptTokens = [];
+  const paraStarts = [ 0 ];
+  const aptPOS =  [ 'ADJ', 'ADV', 'NOUN', 'PROPN', 'VERB' ];
+
+  // generation of aptTokens
+  let sentenceCount = 0;
+  let para = [];
+  for ( let i = 0; i < numOfSentences; i += 1 ) {
+    const sen = [];
+    for ( let j = sentences[i][0]; j <= sentences[i][1]; j += 1 ) {
+      if (its.type( j, tokens, cache ) === 'tabCRLF' && sentenceCount > 6) {
+        aptTokens.push(para);
+        sentenceCount = 0;
+        paraStarts.push(i);
+        para = [];
+      } else if ( its.type( j, tokens, cache ) === 'word' && !its.stopWordFlag( j, tokens, cache ) && aptPOS.includes(its.pos(j, tokens, cache)) ) {
+        sen.push(its.normal( j, tokens, cache ));
+      }
+    }
+    sentenceCount += 1;
+    para.push(sen);
+  }
+  aptTokens.push(para);
+  const textInfo = { aptTokens: aptTokens, paraStarts: paraStarts };
+  return textInfo;
+
+};
+
+// BOW PROCESSING FUNCTIONS
 
 let preprocessingBow = function ( rdd, its, as ) {
 
@@ -66,6 +104,36 @@ let preprocessingBow = function ( rdd, its, as ) {
 
 };
 
+let wholePreprocessingBow = function ( rdd, its, as ) {
+
+  // required information
+  const numOfSentences = rdd.sentences.length;
+  const sentences = rdd.sentences;
+  const tokens = rdd.tokens;
+  const cache = rdd.cache;
+  const bow = [];
+  const paraStarts = [ 0 ];
+  const aptPOS =  [ 'ADJ', 'ADV', 'NOUN', 'PROPN', 'VERB' ];
+
+  // generation of aptTokens
+  let doc = [];
+  for ( let i = 0; i < numOfSentences; i += 1 ) {
+    const sen = [];
+    for ( let j = sentences[i][0]; j <= sentences[i][1]; j += 1 ) {
+      if ( its.type( j, tokens, cache ) === 'word' && !its.stopWordFlag( j, tokens, cache ) && aptPOS.includes(its.pos(j, tokens, cache)) ) {
+        sen.push(its.normal( j, tokens, cache ));
+      }
+    }
+    doc.push(as.bow(sen));
+  }
+  bow.push(doc);
+  const textInfo = { bow: bow, paraStarts: paraStarts };
+  return textInfo;
+
+};
+
+// BM25 PROCESSING FUNCTIONS
+
 let bm25Bow = function ( aptTokens, BM25Vectorizer, its ) {
 
     // variables
@@ -84,6 +152,8 @@ let bm25Bow = function ( aptTokens, BM25Vectorizer, its ) {
     return bow;
 
 };
+
+// GRAPH CREATION FUNCTIONS
 
 let createGraphCommonTokens = function ( para ) {
 
@@ -129,6 +199,8 @@ let createGraphCosine = function ( paraBow, simmilarity ) {
     return senGraph;
 
 };
+
+// RANKING FUNCTIONS
 
 let pagerankWithoutWeights = function ( paraSenGraph ) {
 
@@ -184,6 +256,8 @@ let pagerankWithWeights = function ( paraSenGraph ) {
     return weights;
 };
 
+// MAIN FUNCTIONS
+
 // Comment out blocks for which you want to run tests
 let summary = function ( rdd, its, as, simmilarity, BM25Vectorizer ) {
 
@@ -224,12 +298,12 @@ let summary = function ( rdd, its, as, simmilarity, BM25Vectorizer ) {
     // summaryInfo.paraStarts = textInfo.paraStarts;
 
     // Cosine Simmilarity + Pagerank With Weights
-    const textInfo = preprocessingBow( rdd, its, as );
-    for ( let i = 0; i < textInfo.bow.length; i += 1 ) {
-        weights.push( pagerankWithWeights( createGraphCosine( textInfo.bow[i], simmilarity ) ) );
-    }
-    summaryInfo.weights = weights;
-    summaryInfo.paraStarts = textInfo.paraStarts;
+    // const textInfo = preprocessingBow( rdd, its, as );
+    // for ( let i = 0; i < textInfo.bow.length; i += 1 ) {
+    //     weights.push( pagerankWithWeights( createGraphCosine( textInfo.bow[i], simmilarity ) ) );
+    // }
+    // summaryInfo.weights = weights;
+    // summaryInfo.paraStarts = textInfo.paraStarts;
 
     // // BM25 + Pagerank With Weights
     // const textInfo = preprocessingNonBow( rdd, its);
@@ -239,6 +313,24 @@ let summary = function ( rdd, its, as, simmilarity, BM25Vectorizer ) {
     // }
     // summaryInfo.weights = weights;
     // summaryInfo.paraStarts = textInfo.paraStarts;
+
+    // // BM25 Whole Document
+    // const textInfo = wholePreprocessingBow( rdd, its, as );
+    // for ( let i = 0; i < textInfo.bow.length; i += 1 ) {
+    //     weights.push( pagerankWithWeights( createGraphCosine( textInfo.bow[i], simmilarity ) ) );
+    // }
+    // summaryInfo.weights = weights;
+    // summaryInfo.paraStarts = textInfo.paraStarts;
+
+    // BM25 Combined Para Logic
+    const textInfo = modifiedPreProcessingNonBow( rdd, its, as);
+    const bow = bm25Bow( textInfo.aptTokens, BM25Vectorizer, its );
+    for ( let i = 0; i < textInfo.aptTokens.length; i += 1 ) {
+      weights.push( pagerankWithWeights( createGraphCosine( bow[i], simmilarity ) ) );
+    }
+    summaryInfo.weights = weights;
+    summaryInfo.paraStarts = textInfo.paraStarts;
+    console.log(textInfo.paraStarts);
 
     return summaryInfo;
 
